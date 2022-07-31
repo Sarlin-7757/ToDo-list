@@ -15,6 +15,8 @@ app.get("/", function (req, res) {
     var currentDay = today.getDay();
     var day = "";
 
+    
+
     let options = {
         weekday: "long",
         day: "numeric",
@@ -24,7 +26,7 @@ app.get("/", function (req, res) {
     
     var day = today.toLocaleDateString("en-US",options);
 
-    res.render("list", {kindofDay: day , newListItems : items});
+    res.render("list", {listTitle: day , newListItems : items});
 
 });
 
@@ -35,6 +37,11 @@ app.post("/" , function(req, res){
 
     res.redirect("/");
 });
+
+
+app.get("/work" , function(res , req){
+    res.render("list" , {listTitle: "Work List" , newListItems : })
+})
 
 app.listen(3000, function (){
     console.log("Your server is running on port 3000");
