@@ -1,5 +1,5 @@
 
-
+// This is a ejs file 
 
 exports.getDate = function (){
     const today = new Date();

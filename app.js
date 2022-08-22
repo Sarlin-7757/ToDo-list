@@ -1,3 +1,5 @@
+// this is the backend file
+
 const bodyParser = require("body-parser");
 const express = require("express");
 const date = require(__dirname + "/date.js");
