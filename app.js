@@ -46,7 +46,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static("public"));
 
 app.get("/", function (req, res) {
-
+//  this find method will return an list of array
     Item.find({}, function (err, foundItems) {
 
         if (foundItems.length === 0) {
@@ -67,8 +67,12 @@ app.get("/", function (req, res) {
     });
 });
 
+// custom params 
 app.get("/:customListName", function(req, res){
     customListName = req.params.customListName;
+
+    // this method will return single object 
+
     List.findOne({name:customListName}, function(err , foundList){
         if(!err){
             if(!foundList){
