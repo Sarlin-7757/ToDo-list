@@ -3,8 +3,8 @@ const bodyParser = require("body-parser");
 const express = require("express");
 const mongoose = require("mongoose");
 
-mongoose.set('strictQuery',false );
-mongoose.connect("mongodb://localhost:27017/todolistDB" , {useNewUrlParser: true});
+mongoose.set('strictQuery', false);
+mongoose.connect("mongodb://localhost:27017/todolistDB", { useNewUrlParser: true });
 const app = express();
 
 // ITEMS SCHEMA 
@@ -14,10 +14,10 @@ const itemsSchema = new mongoose.Schema({
 
 //MONGOOSE MODEL FOR ITEMS SCHEMA
 
-const Item = mongoose.model("Item",itemsSchema);
+const Item = mongoose.model("Item", itemsSchema);
 
 const item1 = new Item({
-    name:"Welcome to your todolist"
+    name: "Welcome to your todolist"
 });
 
 const item2 = new Item({
@@ -25,21 +25,17 @@ const item2 = new Item({
 });
 
 const item3 = new Item({
-    name:"<------ Hit this to delete an item."
+    name: "<------ Hit this to delete an item."
 });
 
-const defaultItems = [item1 , item2 , item3];
+const defaultItems = [item1, item2, item3];
 
-Item.insertMany(defaultItems , function(err){
-    if(err){
-        console.log(err);
-    }else{
-        console.log("successfully inserted into database.");
-    }
+const listSchema = new mongoose.Schema({
+    name: String,
+    items: [itemsSchema]
 });
 
-
-
+const List = mongoose.model("List" , listSchema);
 // let items = ["Buy Food", "Cook Food", "Eat Food"];
 
 // let workItems = [];
@@ -50,38 +46,70 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static("public"));
 
 app.get("/", function (req, res) {
-    res.render("list", { listTitle: "Today", newListItems: items });
 
+    Item.find({}, function (err, foundItems) {
+
+        if (foundItems.length === 0) {
+            Item.insertMany(defaultItems, function (err) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log("successfully inserted into database.");
+                }
+            });
+
+            res.redirect("/");
+        } else {
+            res.render("list", { 
+                listTitle: "Today", 
+                newListItems: foundItems });
+        }
+    });
 });
 
-app.post("/", function (req, res) {
-    let item = req.body.newItem;
-    if (req.body.list === "Work") {
-        workItems.push(item);
-
-        res.redirect("/work");
-
-    } else {
-
-        items.push(item);
-
-        res.redirect("/");
+app.get("/:customListName", function(req, res){
+    customListName = req.params.customListName;
+    List.findOne({name:customListName}, function(err , foundList){
+        if(!err){
+            if(!foundList){
+                // create a new list
+                const list = new List({
+                    name : customListName,
+                    items: defaultItems
+                });
+                list.save();
+                res.redirect("/"+customListName);
+            }else{
+                // path to show an existing list 
+                res.render("list",{ listTitle: foundList.name,newListItems: foundList.items})
+        }
     }
+  });
+});
+app.post("/", function (req, res) {
 
+    const itemName = req.body.newItem;
 
+    const item = new Item({
+        name: itemName
+    });
+
+    item.save();
+    res.redirect("/");
+});
+app.post("/delete", function(req , res){
+    const checkedItemId = req.body.checkbox;
+    
+    // REMOVING THE CHECKED ITEM
+    Item.findByIdAndRemove(checkedItemId , function(err){
+        if(err){
+            console.log("Succesfully deleted the checked item.");
+            res.redirect("/");
+        }
+    });
 });
 
 
-app.get("/work", function (req, res) {
-    res.render("list", { listTitle: "Work List", newListItems: workItems });
-
-})
-
-app.post("/work", function (res, req) {
-    let item = req.body.newItem;
-    workItems.push(item);
-    res.redirect("/work");
-})
 
 app.get("/about", function (req, res) {
     res.render("about");
