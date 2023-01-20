@@ -2,7 +2,7 @@
 const bodyParser = require("body-parser");
 const express = require("express");
 const mongoose = require("mongoose");
-
+const _ = require("lodash");
 mongoose.set('strictQuery', false);
 mongoose.connect("mongodb://localhost:27017/todolistDB", { useNewUrlParser: true });
 const app = express();
@@ -69,7 +69,7 @@ app.get("/", function (req, res) {
 
 // custom params 
 app.get("/:customListName", function(req, res){
-    customListName = req.params.customListName;
+   const customListName = _.capitalize(req.params.customListName);
 
     // this method will return single object 
 
@@ -114,9 +114,9 @@ app.post("/delete", function(req , res){
     const checkedItemId = req.body.checkbox;
     const listName = req.body.listName; 
 
-    if(listName = "Today"){
+    if(listName ==="Today"){
          Item.findByIdAndRemove(checkedItemId , function(err){
-        if(err){
+        if(!err){
             console.log("Succesfully deleted the checked item.");
             res.redirect("/");
         }
